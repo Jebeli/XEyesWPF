@@ -1,23 +1,37 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using System.Windows.Threading;
-using System.IO;
-using System.IO.IsolatedStorage;
+﻿/**
+ * Copyright 2018 Jean Pascal Bellot
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included
+ * in all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * 
+ **/
 
 namespace XEyesWPF
 {
+    using System;
+    using System.Windows;
+    using System.Windows.Controls;
+    using System.Windows.Input;
+    using System.Windows.Media;
+    using System.Windows.Threading;
+    using System.IO;
+    using System.IO.IsolatedStorage;
+    using Microsoft.Win32;
+
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
@@ -32,34 +46,40 @@ namespace XEyesWPF
 
         public MainWindow()
         {
-            this.InitializeComponent();
-            this.eyes = new Eyes();
-            this.jiggler = new Jiggler(this);
-            this.leftMiddle = new Point(10 + 100 / 2 - 40 / 2, 10 + 100 / 2 - 40 / 2);
-            this.rightMiddle = new Point(110 + 100 / 2 - 40 / 2, 10 + 100 / 2 - 40 / 2);
-            this.mainCanvas.DataContext = this.eyes;
-            this.eyes.LeftCenter = new Point(10 + 100 / 2 - 40 / 2, 10 + 100 / 2 - 40 / 2);
-            this.eyes.RightCenter = new Point(110 + 100 / 2 - 40 / 2, 10 + 100 / 2 - 40 / 2);
-            this.timer = new System.Timers.Timer();
-            this.timer.Elapsed += timer_Elapsed;
-            this.timer.Interval = 1;
-            this.timer.Start();
-            this.LoadSettings();
+            InitializeComponent();
+            eyes = new Eyes();
+            jiggler = new Jiggler(this);
+            leftMiddle = new Point(10 + 100 / 2 - 40 / 2, 10 + 100 / 2 - 40 / 2);
+            rightMiddle = new Point(110 + 100 / 2 - 40 / 2, 10 + 100 / 2 - 40 / 2);
+            mainCanvas.DataContext = eyes;
+            eyes.LeftCenter = new Point(10 + 100 / 2 - 40 / 2, 10 + 100 / 2 - 40 / 2);
+            eyes.RightCenter = new Point(110 + 100 / 2 - 40 / 2, 10 + 100 / 2 - 40 / 2);
+            timer = new System.Timers.Timer();
+            timer.Elapsed += timer_Elapsed;
+            timer.Interval = 1;
+            timer.Start();
+            LoadSettings();
+            SystemEvents.SessionEnded += SystemEvents_SessionEnded;
         }
 
+        private void SystemEvents_SessionEnded(object sender, SessionEndedEventArgs e)
+        {
+            SaveSettings();   
+        }
 
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
         {
             base.OnClosing(e);
-            this.SaveSettings();
+            SaveSettings();
+            SystemEvents.SessionEnded -= SystemEvents_SessionEnded;
         }
 
         void timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
-            this.Dispatcher.Invoke(new Action(delegate
+            Dispatcher.Invoke(new Action(delegate
             {
                 Point mousePosition = new Point();
-                if (this.CanUseCapture)
+                if (CanUseCapture)
                 {
                     Mouse.Capture(this);
                     mousePosition = Mouse.GetPosition(this);
@@ -69,7 +89,7 @@ namespace XEyesWPF
                 {
                     mousePosition = Mouse.GetPosition(this);
                 }
-                this.HandleMouse(mousePosition);
+                HandleMouse(mousePosition);
             }));
 
         }
@@ -78,10 +98,10 @@ namespace XEyesWPF
         {
             get
             {
-                double eyeWidth = this.Width / 2 - 10;
-                double eyeHeight = this.Height / 2 - 10;
-                double x = this.Width / 2 - eyeWidth / 2;
-                double y = this.Height / 2 - eyeHeight / 2;
+                double eyeWidth = Width / 2 - 10;
+                double eyeHeight = Height / 2 - 10;
+                double x = Width / 2 - eyeWidth / 2;
+                double y = Height / 2 - eyeHeight / 2;
                 return new Point(x, y);
             }
         }
@@ -89,19 +109,19 @@ namespace XEyesWPF
 
         public void DoWiggle()
         {
-            this.Dispatcher.Invoke(new Action(delegate
+            Dispatcher.Invoke(new Action(delegate
             {
                 if (Keyboard.Modifiers == ModifierKeys.None)
                 {
 
-                    Point screenCoordinate = this.PointToScreen(this.LeftCenter);
+                    Point screenCoordinate = PointToScreen(LeftCenter);
                     int x = (int)screenCoordinate.X;
                     int y = (int)screenCoordinate.Y;
                     //Point screenCoordinate = this.PointToScreen(this.LeftCenter);
 
                     NativeMethods.Click(x, y);
                     //this.didWiggle = true;
-                    this.jiggler.LastActivity = DateTime.Now;
+                    jiggler.LastActivity = DateTime.Now;
                     //Console.WriteLine("Wiggled");
                     //this.Invalidate();
                 }
@@ -111,20 +131,29 @@ namespace XEyesWPF
 
         private void menuExit_Click(object sender, RoutedEventArgs e)
         {
-            this.timer.Stop();
-            this.Close();
+            timer.Stop();
+            Close();
         }
 
         private void menuPrefs_Click(object sender, RoutedEventArgs e)
         {
             PrefsWindow prefs = new PrefsWindow();
-            prefs.Eyes = new Eyes(this.eyes);
-            prefs.EnableJiggle = this.jiggler.EnableJiggle;
-            prefs.ZenJiggle = this.jiggler.ZenJiggle;
-            prefs.Wiggle = this.jiggler.Wiggle;
-            this.timer.Stop();
-            prefs.Left = this.Left - 2;
-            prefs.Top = this.Top - 2;
+            prefs.Eyes = new Eyes(eyes);
+            prefs.EnableJiggle = jiggler.EnableJiggle;
+            prefs.ZenJiggle = jiggler.ZenJiggle;
+            prefs.Wiggle = jiggler.Wiggle;
+            timer.Stop();
+            prefs.Left = Left - 2;
+            prefs.Top = Top - 2;
+            var currentScreen = ScreenHandler.GetCurrentScreen(this);
+            if (prefs.Left + prefs.Width > currentScreen.Bounds.X + currentScreen.Bounds.Width)
+            {
+                prefs.Left = currentScreen.Bounds.X + currentScreen.Bounds.Width - prefs.Width;
+            }
+            if (prefs.Top + prefs.Height > currentScreen.Bounds.Y + currentScreen.Bounds.Height)
+            {
+                prefs.Top = currentScreen.Bounds.Y + currentScreen.Bounds.Height - prefs.Height;
+            }
             bool? ok = prefs.ShowDialog();
             if (ok != null)
             {
@@ -133,25 +162,25 @@ namespace XEyesWPF
                     Eyes newEyes = prefs.Eyes;
                     if (newEyes != null)
                     {
-                        this.eyes.BackColor = newEyes.BackColor;
-                        this.eyes.EyeColor = newEyes.EyeColor;
-                        this.eyes.ForeColor = newEyes.ForeColor;
+                        eyes.BackColor = newEyes.BackColor;
+                        eyes.EyeColor = newEyes.EyeColor;
+                        eyes.ForeColor = newEyes.ForeColor;
                     }
-                    this.jiggler.ZenJiggle = prefs.ZenJiggle;
-                    this.jiggler.EnableJiggle = prefs.EnableJiggle;
-                    this.jiggler.Wiggle = prefs.Wiggle;
+                    jiggler.ZenJiggle = prefs.ZenJiggle;
+                    jiggler.EnableJiggle = prefs.EnableJiggle;
+                    jiggler.Wiggle = prefs.Wiggle;
                 }
             }
-            this.timer.Start();
+            timer.Start();
         }
 
-        
+
 
         private void windowMain_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton == MouseButton.Left)
             {
-                this.DragMove();
+                DragMove();
             }
         }
 
@@ -159,11 +188,11 @@ namespace XEyesWPF
         {
             get
             {
-                if (this.IsMouseOver)
+                if (IsMouseOver)
                 {
                     return false;
                 }
-                if (this.contextMenu.IsMouseOver)
+                if (contextMenu.IsMouseOver)
                 {
                     return false;
                 }
@@ -210,19 +239,19 @@ namespace XEyesWPF
 
             //bool mouseClicked Control.MouseButtons != MouseButtons.None;
             //bool keyPressed = Control.ModifierKeys != Keys.None;
-            
+
             if (mouseMoved || keyPressed || mouseClicked)
             {
-                this.jiggler.LastActivity = DateTime.Now;
+                jiggler.LastActivity = DateTime.Now;
             }
             if (mouseMoved)
             {
                 this.mousePosition = mousePosition;
-                Point p1 = this.leftMiddle;
-                this.eyes.LeftCenter = MoveEye(p1, mousePosition);
+                Point p1 = leftMiddle;
+                eyes.LeftCenter = MoveEye(p1, mousePosition);
 
-                Point p2 = this.rightMiddle;
-                this.eyes.RightCenter = MoveEye(p2, mousePosition);
+                Point p2 = rightMiddle;
+                eyes.RightCenter = MoveEye(p2, mousePosition);
                 //Console.WriteLine(dist);
             }
         }
@@ -265,14 +294,14 @@ namespace XEyesWPF
                         {
                             double x = br.ReadDouble();
                             double y = br.ReadDouble();
-                            this.Left = x;
-                            this.Top = y;
-                            int c1 = GetArgb(this.eyes.EyeColor);
-                            int c2 = GetArgb(this.eyes.ForeColor);
-                            int c3 = GetArgb(this.eyes.BackColor);
-                            bool eJ = this.jiggler.EnableJiggle;
-                            bool zJ = this.jiggler.ZenJiggle;
-                            bool w = this.jiggler.Wiggle;
+                            Left = x;
+                            Top = y;
+                            int c1 = GetArgb(eyes.EyeColor);
+                            int c2 = GetArgb(eyes.ForeColor);
+                            int c3 = GetArgb(eyes.BackColor);
+                            bool eJ = jiggler.EnableJiggle;
+                            bool zJ = jiggler.ZenJiggle;
+                            bool w = jiggler.Wiggle;
 
                             if (stream.Length >= (8 + (3 * 4)))
                             {
@@ -290,12 +319,12 @@ namespace XEyesWPF
                                 }
 
                             }
-                            this.eyes.EyeColor = FromArgb(c1);
-                            this.eyes.ForeColor = FromArgb(c2);
-                            this.eyes.BackColor = FromArgb(c3);
-                            this.jiggler.ZenJiggle = zJ;
-                            this.jiggler.EnableJiggle = eJ;
-                            this.jiggler.Wiggle = w;
+                            eyes.EyeColor = FromArgb(c1);
+                            eyes.ForeColor = FromArgb(c2);
+                            eyes.BackColor = FromArgb(c3);
+                            jiggler.ZenJiggle = zJ;
+                            jiggler.EnableJiggle = eJ;
+                            jiggler.Wiggle = w;
                         }
                     }
                 }
@@ -311,17 +340,17 @@ namespace XEyesWPF
                 {
                     using (BinaryWriter bw = new BinaryWriter(stream))
                     {
-                        bw.Write(this.Left);
-                        bw.Write(this.Top);
-                        int c1 = GetArgb(this.eyes.EyeColor);
-                        int c2 = GetArgb(this.eyes.ForeColor);
-                        int c3 = GetArgb(this.eyes.BackColor);
+                        bw.Write(Left);
+                        bw.Write(Top);
+                        int c1 = GetArgb(eyes.EyeColor);
+                        int c2 = GetArgb(eyes.ForeColor);
+                        int c3 = GetArgb(eyes.BackColor);
                         bw.Write(c1);
                         bw.Write(c2);
                         bw.Write(c3);
-                        bw.Write(this.jiggler.EnableJiggle);
-                        bw.Write(this.jiggler.ZenJiggle);
-                        bw.Write(this.jiggler.Wiggle);
+                        bw.Write(jiggler.EnableJiggle);
+                        bw.Write(jiggler.ZenJiggle);
+                        bw.Write(jiggler.Wiggle);
                     }
                 }
             }
@@ -329,12 +358,12 @@ namespace XEyesWPF
 
         private void mainCanvas_ContextMenuOpening(object sender, ContextMenuEventArgs e)
         {
-            this.jiggler.CanWiggle = false;
+            jiggler.CanWiggle = false;
         }
 
         private void mainCanvas_ContextMenuClosing(object sender, ContextMenuEventArgs e)
         {
-            this.jiggler.CanWiggle = true;
+            jiggler.CanWiggle = true;
         }
 
     }

@@ -1,19 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+﻿/**
+ * Copyright 2018 Jean Pascal Bellot
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included
+ * in all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * 
+ **/
 
 namespace XEyesWPF
 {
+    using System.Windows;
+    using System.Windows.Media;
+
     /// <summary>
     /// Interaction logic for PrefsWindow.xaml
     /// </summary>
@@ -26,21 +37,21 @@ Tick the 'Enable Jiggle' checkbox to begin jiggling the mouse; untick it to stop
 
         public PrefsWindow()
         {
-            this.InitializeComponent();
-            this.labelHelp.Text = HELPTEXT;
+            InitializeComponent();
+            labelHelp.Text = HELPTEXT;
         }
 
         public Eyes Eyes
         {
-            get { return this.eyes; }
+            get { return eyes; }
             set
             {
-                this.eyes = value;
-                if (this.eyes != null)
+                eyes = value;
+                if (eyes != null)
                 {
-                    this.colorPickerEye.SelectedColor = this.eyes.EyeColor;
-                    this.colorPickerBack.SelectedColor = this.eyes.BackColor;
-                    this.colorPickerFore.SelectedColor = this.eyes.ForeColor;
+                    colorPickerEye.SelectedColor = eyes.EyeColor;
+                    colorPickerBack.SelectedColor = eyes.BackColor;
+                    colorPickerFore.SelectedColor = eyes.ForeColor;
                 }
             }
         }
@@ -63,97 +74,97 @@ Tick the 'Enable Jiggle' checkbox to begin jiggling the mouse; untick it to stop
         {
             get
             {
-                if (this.cbJiggle.IsChecked.HasValue)
+                if (cbJiggle.IsChecked.HasValue)
                 {
-                    return this.cbJiggle.IsChecked.Value;
+                    return cbJiggle.IsChecked.Value;
                 }
                 return false;
             }
-            set { this.cbJiggle.IsChecked = value; }
+            set { cbJiggle.IsChecked = value; }
         }
 
         public bool ZenJiggle
         {
             get
             {
-                if (this.cbZenJiggle.IsChecked.HasValue)
+                if (cbZenJiggle.IsChecked.HasValue)
                 {
-                    return this.cbZenJiggle.IsChecked.Value;
+                    return cbZenJiggle.IsChecked.Value;
                 }
                 return false;
             }
-            set { this.cbZenJiggle.IsChecked = value; }
+            set { cbZenJiggle.IsChecked = value; }
         }
 
         public bool Wiggle
         {
             get
             {
-                if (this.cbWiggle.IsChecked.HasValue)
+                if (cbWiggle.IsChecked.HasValue)
                 {
-                    return this.cbWiggle.IsChecked.Value;
+                    return cbWiggle.IsChecked.Value;
                 }
                 return false;
             }
-            set { this.cbWiggle.IsChecked = value; }
+            set { cbWiggle.IsChecked = value; }
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            this.DialogResult = true;
-            this.Close();
+            DialogResult = true;
+            Close();
         }
 
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
-            this.eyes = null;
-            this.DialogResult = false;
-            this.Close();
+            eyes = null;
+            DialogResult = false;
+            Close();
         }
 
         private void Button_Click_2(object sender, RoutedEventArgs e)
         {
-            this.eyes = new Eyes();
-            this.DialogResult = true;
-            this.Close();
+            eyes = new Eyes();
+            DialogResult = true;
+            Close();
         }
 
         private void ColorPicker_SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e)
         {
-            if (this.eyes != null)
+            if (eyes != null)
             {
                 Color c = Colors.Black;
                 if (e.NewValue.HasValue)
                 {
                     c = e.NewValue.Value;
                 }
-                this.eyes.EyeColor = c;
+                eyes.EyeColor = c;
             }
         }
 
         private void ColorPicker_SelectedColorChanged_1(object sender, RoutedPropertyChangedEventArgs<Color?> e)
         {
-            if (this.eyes != null)
+            if (eyes != null)
             {
                 Color c = Colors.Transparent;
                 if (e.NewValue.HasValue)
                 {
                     c = e.NewValue.Value;
                 }
-                this.eyes.BackColor = c;
+                eyes.BackColor = c;
             }
         }
 
         private void colorPickerFore_SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e)
         {
-            if (this.eyes != null)
+            if (eyes != null)
             {
                 Color c = Colors.Black;
                 if (e.NewValue.HasValue)
                 {
                     c = e.NewValue.Value;
                 }
-                this.eyes.ForeColor = c;
+                eyes.ForeColor = c;
             }
 
         }
