@@ -1,0 +1,18 @@
+﻿<Window x:Name="windowMain" x:Class="XEyesWPF.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="120" Width="220" AllowsTransparency="True" Background="Transparent" WindowStyle="None"
+        ShowInTaskbar="False" Topmost="True" MouseDown="windowMain_MouseDown">
+    <Canvas x:Name="mainCanvas" ContextMenuOpening="mainCanvas_ContextMenuOpening" ContextMenuClosing="mainCanvas_ContextMenuClosing">
+        <Ellipse Canvas.Left="10" Canvas.Top="10" Width="100" Height="100" Stroke="{Binding ForeBrush, FallbackValue=Black}" StrokeThickness="4" Fill="{Binding BackBrush, FallbackValue=White}"/>
+        <Ellipse Canvas.Left="110" Canvas.Top="10" Width="100" Height="100" Stroke="{Binding ForeBrush, FallbackValue=Black}"  StrokeThickness="4" Fill="{Binding BackBrush, FallbackValue=White}"/>
+        <Ellipse x:Name="leftPupil" Canvas.Left="{Binding LeftCenter.X, FallbackValue=50}" Canvas.Top="{Binding LeftCenter.Y, FallbackValue=50}" Width="40" Height="40" Fill="{Binding EyeBrush, FallbackValue=Black}"/>
+        <Ellipse x:Name="rightPupil" Canvas.Left="{Binding RightCenter.X, FallbackValue=150}" Canvas.Top="{Binding RightCenter.Y, FallbackValue=50}" Width="40" Height="40" Fill="{Binding EyeBrush, FallbackValue=Black}"/>
+        <Canvas.ContextMenu>
+            <ContextMenu x:Name="contextMenu">
+                <MenuItem Header="Preferences" x:Name="menuPrefs" Click="menuPrefs_Click"/>
+                <MenuItem Header="Exit" x:Name="menuExit" Click="menuExit_Click" />                
+            </ContextMenu>
+        </Canvas.ContextMenu>
+    </Canvas>
+</Window>
